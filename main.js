@@ -3,7 +3,7 @@ const $$ = document.querySelectorAll.bind(document);
 
 function Modal() {
     this.openModal = (option = {}) => {
-        const { templateId } = option;
+        const { templateId, allowBackDropClose = true } = option;
         const template = $(`#${templateId}`);
 
         if (!template) {
@@ -13,6 +13,7 @@ function Modal() {
 
         const content = template.content.cloneNode(true);
 
+        // Create modal elements
         const backdrop = document.createElement("div");
         backdrop.className = "modal-backdrop ";
 
@@ -39,29 +40,62 @@ function Modal() {
         // Attack event listener
         closeBtn.onclick = () => this.closeModal(backdrop);
 
-        backdrop.onclick = (e) => {
-            if (e.target === backdrop) {
-                this.closeModal(backdrop);
-            }
-        };
+        if (allowBackDropClose) {
+            backdrop.onclick = (e) => {
+                if (e.target === backdrop) {
+                    this.closeModal(backdrop);
+                }
+            };
+        }
+
         document.addEventListener("keydown", (e) => {
             if (e.key === "Escape") {
                 this.closeModal(backdrop);
             }
         });
+
+        // Disable scrolling
+        document.body.classList.add("no-scroll");
+
+        return backdrop;
     };
 
     this.closeModal = (modalElement) => {
         modalElement.classList.remove("show");
         modalElement.ontransitionend = () => {
             modalElement.remove();
+
+            // Disable scrolling
+            document.body.classList.remove("no-scroll");
         };
     };
 }
 
 const modal = new Modal();
-$("#open-modal").onclick = () => {
-    modal.openModal({
-        templateId: "modal",
+$("#open-modal-1").onclick = () => {
+    const modalElement = modal.openModal({
+        templateId: "modal-1",
     });
+
+    const img = modalElement.querySelector("img");
+    console.log(img);
+};
+$("#open-modal-2").onclick = () => {
+    const modalElement = modal.openModal({
+        templateId: "modal-2",
+        allowBackDropClose: false,
+    });
+
+    const form = modalElement.querySelector("#login-form");
+    if (form) {
+        form.onsubmit = (e) => {
+            e.preventDefault();
+            const formData = {
+                email: $("#email").value.trim(),
+                password: $("#password").value.trim(),
+            };
+
+            console.log(formData);
+        };
+    }
 };
