@@ -7,6 +7,8 @@ function Modal(options = {}) {
         destroyOnClose = true,
         cssClass = [],
         closeMethod = ["button", "overplay", "escape"],
+        onOpen,
+        onClose,
     } = options;
     const template = $(`#${templateId}`);
 
@@ -105,20 +107,29 @@ function Modal(options = {}) {
             });
         }
 
+        this._backdrop.ontransitionend = (e) => {
+            if (e.propertyName !== "transform") return;
+            if (typeof onOpen === "function") onOpen();
+        };
+
         return this._backdrop;
     };
 
     this.close = (destroy = destroyOnClose) => {
         this._backdrop.classList.remove("show");
-        this._backdrop.ontransitionend = () => {
+        this._backdrop.ontransitionend = (e) => {
+            if (e.propertyName !== "transform") return;
+
             if (this._backdrop && destroy) {
                 this._backdrop.remove();
                 this._backdrop = null;
             }
 
-            // Disable scrolling
+            // Enable scrolling
             document.body.classList.remove("no-scroll");
             document.body.style.paddingRight = "";
+
+            if (typeof onClose === "function") onClose();
         };
     };
 
@@ -136,7 +147,7 @@ $("#open-modal-1").onclick = () => {
     const modalElement = modal1.open();
 
     const img = modalElement.querySelector("img");
-    console.log(img);
+    // console.log(img);
 };
 
 const modal2 = new Modal({
