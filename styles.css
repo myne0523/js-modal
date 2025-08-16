@@ -103,6 +103,10 @@ article img {
     overflow-y: auto;
 }
 
+.modal-footer {
+    padding: 20px 0;
+}
+
 .no-scroll {
     overflow: hidden;
 }
