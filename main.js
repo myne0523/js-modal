@@ -77,12 +77,14 @@ function Modal(options = {}) {
         if (footer) {
             this._modalFooter = document.createElement("div");
             this._modalFooter.className = "modal-footer";
-            this._modalFooter.innerHTML =
-                "Footer : Lorem ipsum dolor sit amet consectetur!";
 
             if (this._footerContent) {
                 this._modalFooter.innerHTML = this._footerContent;
             }
+
+            this._footerButton.forEach((button) => {
+                this._modalFooter.append(button);
+            });
 
             container.append(this._modalFooter);
         }
@@ -96,6 +98,17 @@ function Modal(options = {}) {
         if (this._modalFooter) {
             this._modalFooter.innerHTML = html;
         }
+    };
+
+    this._footerButton = [];
+
+    this.addFooterButton = (title, cssClass, callback) => {
+        const button = document.createElement("button");
+        button.className = cssClass;
+        button.innerHTML = title;
+        button.onclick = callback;
+
+        this._footerButton.push(button);
     };
 
     this.open = () => {
@@ -209,6 +222,7 @@ $("#open-modal-2").onclick = () => {
 
 const modal3 = new Modal({
     templateId: "modal-3",
+    closeMethod: [],
     footer: true,
     cssClass: ["class1", "class3", "classN"],
     onOpen: () => {
@@ -219,6 +233,12 @@ const modal3 = new Modal({
     },
 });
 
-modal3.setFooterContent("<h2>Footer Content</h2>");
+modal3.addFooterButton("Cancel", "modal-btn", (e) => {
+    modal3.close();
+});
+
+modal3.addFooterButton("<span>Agree</span>", "modal-btn primary", (e) => {
+    modal3.close();
+});
 
 modal3.open();
