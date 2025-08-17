@@ -1,6 +1,8 @@
 const $ = document.querySelector.bind(document);
 const $$ = document.querySelectorAll.bind(document);
 
+Modal.elements = [];
+
 function Modal(options = {}) {
     const {
         templateId,
@@ -112,6 +114,8 @@ function Modal(options = {}) {
     };
 
     this.open = () => {
+        Modal.elements.push(this);
+
         if (!this._backdrop) {
             this._build();
         }
@@ -135,31 +139,40 @@ function Modal(options = {}) {
         }
 
         if (this._allowEscapeClose) {
-            document.addEventListener("keydown", (e) => {
-                if (e.key === "Escape") {
-                    this.close();
-                }
-            });
+            document.addEventListener("keydown", this._handelEscapeKey);
         }
 
-        this_onTransitionEnd(() => {
+        this._onTransitionEnd(() => {
             if (typeof onOpen === "function") onOpen();
         });
 
         return this._backdrop;
     };
 
-    this_onTransitionEnd = (callback) => {
+    this._handelEscapeKey = (e) => {
+        const lastModal = Modal.elements(Modal.length - 1);
+        if (e.key === "Escape" && this === lastModal) {
+            this.close();
+        }
+    };
+
+    this._onTransitionEnd = (callback) => {
         this._backdrop.ontransitionend = (e) => {
             if (e.propertyName !== "transform") return;
-            if (callback === "function") callback();
+            if (typeof callback === "function") callback();
         };
     };
 
     this.close = (destroy = destroyOnClose) => {
+        Modal.elements.pop();
+
         this._backdrop.classList.remove("show");
 
-        this_onTransitionEnd(() => {
+        if (this._allowEscapeClose) {
+            document.removeEventListener("keydown", this._handelEscapeKey);
+        }
+
+        this._onTransitionEnd(() => {
             if (this._backdrop && destroy) {
                 this._backdrop.remove();
                 this._backdrop = null;
@@ -167,8 +180,10 @@ function Modal(options = {}) {
             }
 
             // Enable scrolling
-            document.body.classList.remove("no-scroll");
-            document.body.style.paddingRight = "";
+            if (!Modal.elements.length) {
+                document.body.classList.remove("no-scroll");
+                document.body.style.paddingRight = "";
+            }
 
             if (typeof onClose === "function") onClose();
         });
@@ -196,10 +211,10 @@ const modal2 = new Modal({
     // closeMethods: ['button', 'overlay', 'escape'],
     cssClass: ["class1", "class2", "classN"],
     onOpen: () => {
-        console.log("Modal opened");
+        console.log("Modal 2 opened");
     },
     onClose: () => {
-        console.log("Modal closed");
+        console.log("Modal 2 closed");
     },
 });
 
@@ -226,10 +241,10 @@ const modal3 = new Modal({
     footer: true,
     cssClass: ["class1", "class3", "classN"],
     onOpen: () => {
-        console.log("Modal opened");
+        console.log("Modal 3 opened");
     },
     onClose: () => {
-        console.log("Modal closed");
+        console.log("Modal 3 closed");
     },
 });
 
@@ -241,4 +256,6 @@ modal3.addFooterButton("<span>Agree</span>", "modal-btn primary", (e) => {
     modal3.close();
 });
 
-modal3.open();
+$("#open-modal-3").onclick = () => {
+    modal3.open();
+};
